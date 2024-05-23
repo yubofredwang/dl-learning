@@ -39,7 +39,7 @@ class BigramLangugageModel(nn.Module):
         # embedding_dim (int): the size of each embedding vector
         # Here is basically means a word can be linked to another word.
         self.embeddings = nn.Embedding(vocab_size, vocab_size)
-    
+
     def forward(self, idx, targets: torch.Tensor = None):
         # idx and targets are both (B, T) tensor of integers
         logits: torch.Tensor = self.embeddings(idx)
@@ -55,7 +55,7 @@ class BigramLangugageModel(nn.Module):
             # It is useful when training a classification problem with C classes. 
             loss = F.cross_entropy(logits, targets)
         return logits, loss
-    
+
     @torch.no_grad()
     def generate(self, idx, max_new_tokens):
         # idx is (B, T) array of indices in the current context

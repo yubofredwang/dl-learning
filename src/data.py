@@ -35,3 +35,9 @@ class DataLoader:
         x = torch.stack([torch.from_numpy((self.eval_data[i:i+block_size]).astype(np.int64)) for i in ix])
         y = torch.stack([torch.from_numpy((self.eval_data[i+1:i+1+block_size]).astype(np.int64)) for i in ix])
         return x, y
+
+    def encode(self, s):
+        return [self.stoi[c] for c in s] # encoder: take a string, output a list of integers
+
+    def decode(self, l):
+        return ''.join([self.itos[i] for i in l]) # decoder: take a list of integers, output a string
