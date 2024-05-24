@@ -32,22 +32,34 @@ class BigramLangugageModel(nn.Module):
 
 
     """
-    
-    def __init__(self, vocab_size):
+    def __init__(self, vocab_size, n_embed=32, block_size=8):
         super().__init__()
         # num_embeddings (int): size of the dictionary of embeddings
         # embedding_dim (int): the size of each embedding vector
         # Here is basically means a word can be linked to another word.
-        self.embeddings = nn.Embedding(vocab_size, vocab_size)
+        # V2: change from vocab size to n_embed. default to 32?
+        self.token_embedding_table = nn.Embedding(vocab_size, n_embed)
+        # V2: Added linear layer, showed some improvement in the model
+        self.lm_head = nn.Linear(n_embed, vocab_size) # 32 x 65
+        # V2: Added positional embedding table layer, similar to the paper
+        self.positional_embedding_table = nn.Embedding(block_size, n_embed)
+
 
     def forward(self, idx, targets: torch.Tensor = None):
+        _, T = idx.shape # C = n_embed, embedding dimensionality
         # idx and targets are both (B, T) tensor of integers
-        logits: torch.Tensor = self.embeddings(idx)
+        token_embeddings: torch.Tensor = self.token_embedding_table(idx) # B, T, C
+        # torch.arange(10) = [0 ... 9]
+        pos_embeddings = self.positional_embedding_table(torch.arange(T))   # T, C
+        # right aligned broadcasted across batch, means each batch adds the same positional embedding
+        # which makes sense since the position embedding is the same for each batch
+        x = token_embeddings + pos_embeddings # B, T, C
+        logits = self.lm_head(x) # B, T, Vocab Size
         if targets is None:
             loss = None
         else:
-            # B=batch size, T=sequence length(block size), C(Channel)=embedding dimensionality
             B, T, C = logits.shape
+            # B=batch size, T=sequence length(block size), C(Channel)=embedding dimensionality
             logits = logits.view(B*T, C)
             targets = targets.view(B*T)
             # Cross entropy loss expects the input to be of shape (minibatch, C)
