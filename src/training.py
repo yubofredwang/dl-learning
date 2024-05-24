@@ -3,6 +3,7 @@ torch.manual_seed(42)
 
 from data import DataLoader
 from bigram_model import BigramLangugageModel
+from decoder_model import DecoderModel
 
 # helps estimate an arbitrarily accurate loss over either split using many batches
 @torch.no_grad()
@@ -29,7 +30,7 @@ def train():
     # Create data loader
     data_loader = DataLoader("shakespeare_char")
     # Initialize the model
-    model = BigramLangugageModel(data_loader.vocab_size)
+    model = DecoderModel(data_loader.vocab_size)
     # Create optimizer
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
     eval_interval = 1000
